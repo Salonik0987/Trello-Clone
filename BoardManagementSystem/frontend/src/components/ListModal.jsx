@@ -1,70 +1,85 @@
 import { useState } from "react";
-import API from "../api";
+import API from "../api/api";
 
 export default function ListModal({ list, onClose, refresh }) {
   const [title, setTitle] = useState(list.title);
+  const [loading, setLoading] = useState(false);
 
   const updateList = async () => {
+    if (!title.trim()) return;
+    setLoading(true);
     try {
-      if (!title.trim()) {
-        alert("List name cannot be empty");
-        return;
-      }
-      await API.put(`/lists/${list.id}`, { title });
+      await API.put(`/lists/${list.id}`, { title: title.trim() });
       refresh();
       onClose();
-    } catch (error) {
-      console.error("Error updating list:", error);
-      alert("Failed to update list");
+    } catch (e) {
+      console.error("Error updating list:", e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const deleteList = async () => {
-    if (window.confirm(`Are you sure you want to delete "${list.title}"? This will delete all cards in it.`)) {
-      try {
-        await API.delete(`/lists/${list.id}`);
-        refresh();
-        onClose();
-      } catch (error) {
-        console.error("Error deleting list:", error);
-        alert("Failed to delete list");
-      }
+    if (!window.confirm(`Delete list "${list.title}" and all its cards?`)) return;
+    setLoading(true);
+    try {
+      await API.delete(`/lists/${list.id}`);
+      refresh();
+      onClose();
+    } catch (e) {
+      console.error("Error deleting list:", e);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96 shadow-2xl">
-        <h2 className="text-xl font-bold text-black mb-4">Edit List</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.6)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-800">Edit List</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl leading-none transition"
+          >
+            ✕
+          </button>
+        </div>
 
-        <input
-          className="w-full mb-4 border-2 border-gray-300 rounded px-3 py-2 text-black focus:outline-none focus:border-blue-500 font-semibold"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter list name..."
-          onKeyPress={(e) => {
-            if (e.key === "Enter") updateList();
-          }}
-        />
+        {/* Body */}
+        <div className="px-5 py-4">
+          <label className="block text-xs font-semibold uppercase text-gray-400 mb-1.5">
+            List Name
+          </label>
+          <input
+            autoFocus
+            className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-gray-800 text-sm font-semibold focus:outline-none focus:border-blue-500 transition"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && updateList()}
+            placeholder="Enter list name…"
+          />
+        </div>
 
-        <div className="flex justify-between gap-2">
+        {/* Footer */}
+        <div className="px-5 pb-5 flex gap-2">
           <button
             onClick={updateList}
-            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-semibold transition"
+            disabled={loading}
+            className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-semibold text-sm transition"
           >
             Save
           </button>
           <button
             onClick={deleteList}
-            className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-semibold transition"
+            disabled={loading}
+            className="flex-1 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-semibold text-sm transition"
           >
-            Delete
-          </button>
-          <button
-            onClick={onClose}
-            className="flex-1 bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded font-semibold transition"
-          >
-            Close
+            Delete List
           </button>
         </div>
       </div>
