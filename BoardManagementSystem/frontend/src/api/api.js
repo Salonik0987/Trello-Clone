@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://trello-clone-backend-ihfe.onrender.com",
+  baseURL: "https://trello-clone-op1c.onrender.com",
 });
 
 // Add request interceptor for debugging
