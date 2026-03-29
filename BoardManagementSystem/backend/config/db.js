@@ -1,10 +1,10 @@
 const mysql = require("mysql2");
 
 const db = mysql.createConnection({
-  host: "localhost",
+  host: "mysql.railway.internal",
   user: "root",
   password: "dVhyMHZiuIrZpLuWFcrdiBuAFFIHXaqM",
-  database: "trello_clone"
+  database: "railway"
 });
 
 db.connect(err => {
